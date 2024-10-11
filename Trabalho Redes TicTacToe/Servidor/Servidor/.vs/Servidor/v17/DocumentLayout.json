@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Migalha\\Desktop\\Trabalho Redes TicTacToe\\Servidor\\Servidor\\",
+  "WorkspaceRootPath": "C:\\Users\\migue\\OneDrive\\Documentos\\GitHub\\ProvaDeRedes\\Trabalho Redes TicTacToe\\Servidor\\Servidor\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7999E31F-0830-4619-8388-6F2339BDBBC7}|Servidor\\Servidor.csproj|c:\\users\\migalha\\desktop\\trabalho redes tictactoe\\servidor\\servidor\\servidor\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{7999E31F-0830-4619-8388-6F2339BDBBC7}|Servidor\\Servidor.csproj|c:\\users\\migue\\onedrive\\documentos\\github\\provaderedes\\trabalho redes tictactoe\\servidor\\servidor\\servidor\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{7999E31F-0830-4619-8388-6F2339BDBBC7}|Servidor\\Servidor.csproj|solutionrelative:servidor\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -20,11 +20,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Migalha\\Desktop\\Trabalho Redes TicTacToe\\Servidor\\Servidor\\Servidor\\Program.cs",
+              "DocumentMoniker": "C:\\Users\\migue\\OneDrive\\Documentos\\GitHub\\ProvaDeRedes\\Trabalho Redes TicTacToe\\Servidor\\Servidor\\Servidor\\Program.cs",
               "RelativeDocumentMoniker": "Servidor\\Program.cs",
-              "ToolTip": "C:\\Users\\Migalha\\Desktop\\Trabalho Redes TicTacToe\\Servidor\\Servidor\\Servidor\\Program.cs",
+              "ToolTip": "C:\\Users\\migue\\OneDrive\\Documentos\\GitHub\\ProvaDeRedes\\Trabalho Redes TicTacToe\\Servidor\\Servidor\\Servidor\\Program.cs",
               "RelativeToolTip": "Servidor\\Program.cs",
-              "ViewState": "AQIAAGwAAAAAAAAAAAAmwHcAAAAAAAAA",
+              "ViewState": "AQIAAGUAAAAAAAAAAAAAAHUAAAAIAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-09-14T04:45:05.505Z",
               "EditorCaption": ""

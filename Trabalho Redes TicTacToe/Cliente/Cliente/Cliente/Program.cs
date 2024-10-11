@@ -1,6 +1,6 @@
-﻿using Microsoft.VisualBasic.FileIO;
-using System;
+﻿using System;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 
 namespace Cliente
@@ -11,10 +11,11 @@ namespace Cliente
         {
             try
             {
-                string server = "127.0.0.1";
+                string serverIp = "127.0.0.1";
                 int port = 13000;
-                Client newCLient = new(server, port);
-                Board board = Board.StartGame(newCLient);
+                Client client = new(serverIp, port);
+                Board gameBoard = new Board(client);
+                gameBoard.StartGame();
             }
             catch (SocketException e)
             {
@@ -33,133 +34,152 @@ namespace Cliente
     class Board
     {
         Client m_player;
+        bool m_gameOver;
 
-        Board(Client player)
+        public Board(Client client)
         {
-            m_player = player;
+            m_player = client;
+            m_gameOver = false;
         }
-        public static Board StartGame(Client player)
+        
+        public void StartGame()
         {
-            Board board = new Board(player);
-            board.MakeConnection();
-            return board;
+            ConnectToServer();
         }
 
-        void MakeConnection()
+        void ConnectToServer()
         {
-            string messageFromPlayer = m_player.GetMessage();
-            switch (messageFromPlayer)
+            Console.WriteLine("Conectando ao servidor...");
+            while (true)
             {
-                case "1":
-                    Console.WriteLine("Aguardando outro jogador!");
-                    MakeConnection();
-                    return;
-                case "0":
-                    Console.WriteLine("Jogador conectado! A partida será iniciada!");
-                    HandleBoard();
-                    return;
-                default:
-                    Console.WriteLine("Mensagem inválida! tentando novamente.");
-                    MakeConnection();
-                    return;
+                string serverMessage = m_player.ReceiveMessage();
+                Console.WriteLine($"Mensagem do servidor: {serverMessage}");
+
+
+                switch (serverMessage)
+                {
+                    case "1":
+                        Console.WriteLine("Aguardando outro jogador...");
+                        break;
+                    case "0":
+                        Console.WriteLine("Outro jogador conectado! Iniciando o jogo.");
+                        GameLoop();
+                        return;
+                    default:
+                        if (serverMessage.StartsWith("0"))
+                        {
+                            string boardMessage = serverMessage.Substring(1);
+                            Console.WriteLine($"Tabuleiro atual: {boardMessage}");
+                            if (boardMessage.EndsWith("X") || boardMessage.EndsWith("O"))
+                            {
+                                PlayerTurn();
+                            }
+                            else if (boardMessage.EndsWith("1") || boardMessage.EndsWith("2") || boardMessage.EndsWith("3"))
+                            {
+                                m_gameOver = true;
+                                EndGame(boardMessage);
+                            }
+                            else
+                            {
+                                Console.WriteLine("Aguardando o movimento do adversário...");
+                            }
+                            GameLoop();
+                            return;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Erro: resposta inesperada do servidor. Tentando novamente.");
+                        }
+                        break;
+                }
             }
         }
 
-        void HandleBoard()
+        void GameLoop()
         {
-            string msg1 = m_player.GetMessage();
-            Console.WriteLine(msg1);
+            while (!m_gameOver)
+            {
+                string boardMessage = m_player.ReceiveMessage();
+                //DrawBoard(boardMessage);
+                Console.WriteLine($"Tabuleiro atual: {boardMessage}");
 
-            if (msg1.EndsWith("X") || msg1.EndsWith("O"))
-            {
-                PlayerMove();
-                return;
-            }
-            else if (msg1.EndsWith("1") || msg1.EndsWith("2") || msg1.EndsWith("3"))
-            {
-                CloseGame($"{msg1[msg1.Length - 1]}");
-                return;
-            }
-            else
-            {
-                NotAPlayerMove();
-                return;
+                if (boardMessage.EndsWith("X") || boardMessage.EndsWith("O"))
+                {
+                    PlayerTurn();
+                }
+                else if (boardMessage.EndsWith("1") || boardMessage.EndsWith("2") || boardMessage.EndsWith("3"))
+                {
+                    m_gameOver = true;
+                    EndGame(boardMessage);
+                }
+                else
+                {
+                    Console.WriteLine("Aguardando o movimento do adversário...");
+                }
             }
         }
 
-        void PlayerMove()
+        void PlayerTurn()
         {
-            Console.WriteLine("Insira sua jogada: ");
-            string input = Console.ReadLine() ?? string.Empty; ;
-            m_player.SendMessage(input);
-            string result = m_player.GetMessage();
-            if (result == "-1")
+            Console.WriteLine("Sua vez! Insira sua jogada (1-9): ");
+            string? move = Console.ReadLine();
+            move = string.IsNullOrWhiteSpace(move) ? "-1" : move;
+
+            m_player.SendMessage(move);
+            string response = m_player.ReceiveMessage();
+            if (response == "-1")
             {
                 Console.WriteLine("Jogada inválida! Por favor, tente novamente.");
-                PlayerMove();
-                return;
+                PlayerTurn();
             }
-
-            HandleBoard();
         }
 
-        void NotAPlayerMove()
+        void EndGame(string result)
         {
-            string board = m_player.GetMessage();
-            Console.Write(board);
-            HandleBoard();
-        }
-
-        void CloseGame(string gameResult)
-        {
-            if (gameResult == "1" || gameResult == "2")
+            if (result.EndsWith("1"))
             {
-                Console.WriteLine($"O jogador número {gameResult} ganhou!");
+                Console.WriteLine("O jogador 1 venceu!");
             }
-            else if (gameResult == "3")
+            else if (result.EndsWith("2"))
             {
-                Console.WriteLine("O jogo deu velha! >:P");
+                Console.WriteLine("O jogador 2 venceu!");
+            }
+            else if (result.EndsWith("3"))
+            {
+                Console.WriteLine("O jogo terminou em empate!");
             }
             else
             {
-                Console.WriteLine("Houve um erro inesperado!");
+                Console.WriteLine("Erro inesperado ao finalizar o jogo.");
             }
-            
-            Console.WriteLine("O jogo encerrou! Obrigado por jogar :D");
+
+            Console.WriteLine("Obrigado por jogar! O jogo terminou.");
             m_player.Disconnect();
         }
     }
 
     class Client
     {
-        TcpClient m_tcpClient;
-        NetworkStream m_stream;
+        private TcpClient m_tcpClient;
+        private NetworkStream m_stream;
+
         public Client(string serverIp, int port)
         {
-            m_tcpClient = GenerateNewClient(serverIp, port);
+            m_tcpClient = new TcpClient(serverIp, port);
             m_stream = m_tcpClient.GetStream();
         }
 
-        TcpClient GenerateNewClient(string serverIp, int port) => new TcpClient(serverIp, port);
-
-        public string GetMessage()
+        public string ReceiveMessage()
         {
-            Console.WriteLine("ESPERANDO MENSAGEM!");
-            return GetMessage(m_stream);
-        }
-        public void SendMessage(string message) => SendMessage(m_stream, message);
-
-        string GetMessage(NetworkStream stream)
-        {
-            byte[] buffer = new byte[512];
-            int bytesRead;
-            bytesRead = stream.Read(buffer, 0, buffer.Length);
+            byte[] buffer = new byte[256];
+            int bytesRead = m_stream.Read(buffer, 0, buffer.Length);
             return Encoding.UTF8.GetString(buffer, 0, bytesRead);
         }
-        void SendMessage(NetworkStream stream, string message)
+
+        public void SendMessage(string message)
         {
             byte[] data = Encoding.UTF8.GetBytes(message);
-            stream.Write(data, 0, data.Length);
+            m_stream.Write(data, 0, data.Length);
         }
 
         public void Disconnect()
