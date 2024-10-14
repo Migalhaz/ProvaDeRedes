@@ -1,6 +1,4 @@
-﻿using System;
-using System.Net.Sockets;
-using System.Numerics;
+﻿using System.Net.Sockets;
 using System.Text;
 
 namespace Cliente
@@ -74,11 +72,6 @@ namespace Cliente
                             {
                                 PlayerTurn();
                             }
-                            else if (boardMessage.EndsWith("1") || boardMessage.EndsWith("2") || boardMessage.EndsWith("3"))
-                            {
-                                m_gameOver = true;
-                                EndGame(boardMessage);
-                            }
                             else
                             {
                                 Console.WriteLine("Aguardando o movimento do adversário...");
@@ -100,7 +93,6 @@ namespace Cliente
             while (!m_gameOver)
             {
                 string boardMessage = m_player.ReceiveMessage();
-                //DrawBoard(boardMessage);
                 Console.WriteLine($"Tabuleiro atual: {boardMessage}");
 
                 if (boardMessage.EndsWith("X") || boardMessage.EndsWith("O"))
